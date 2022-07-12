@@ -6,11 +6,13 @@ from core import custom_help as ch
 from core.logger import logger
 from cogs.utils import Utils
 
+from dotenv import load_dotenv
 from discord.ext import commands
 import discord
 
 import os
 
+load_dotenv()
 client = commands.Bot(command_prefix='?')
 client.owner_id = OWNER_ID
 
@@ -46,5 +48,4 @@ for ext in os.listdir('cogs'):
         client.load_extension(f'cogs.{ext[:-3]}')
 
 client.help_command = ch.CustomHelp()
-# client.run(os.environ['TOKEN'])  # Web Ver
-client.run('OTkyNDg1Mzg2Nzk2NDA0Nzk2.GaDhkH.XtwY4V8Y7e1SlgQ6FcMI0ABg5rQVzXY2xKNvlo')
+client.run(os.getenv('BOT_TOKEN'))
