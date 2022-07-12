@@ -2,10 +2,10 @@
 # coding: utf-8
 import os
 
-from EmakBot.globals import BACKUP_INTERVAL, OWNER_ID
-from EmakBot.core import custom_help as ch
-from EmakBot.core.logger import logger
-from EmakBot.cogs.utils import Utils
+from globals import BACKUP_INTERVAL, OWNER_ID
+from core import custom_help as ch
+from core.logger import logger
+from cogs.utils import Utils
 
 from discord.ext import commands
 import discord
