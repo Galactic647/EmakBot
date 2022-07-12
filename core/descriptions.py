@@ -130,12 +130,38 @@ WARNINFO = f'''
 Command ini akan mengirim pesan hanya pada 1 channel:
 - Channel command ini dipanggil
 '''
-ASCENDMUTE_BRIEF = ''
-ASCENDMUTE = ''
-ASCENDKICK_BRIEF = ''
-ASCENDKICK = ''
-ASCENDBAN_BRIEF = ''
-ASCENDBAN = ''
+ASCENDMUTE_BRIEF = 'Command untuk menaikkan warn ke mute'
+ASCENDMUTE = '''
+Untuk menaikkan warn ke mute, user harus berada pada warn level 2
+Cara kerjanya kurang lebih sama seperti command `mute`, hanya
+saja parameter `target` bisa menggunakan `user (mention)` atau
+`warn id` dari warn user
+
+Command ini akan mengirim pesan pada 3 channel:
+- Channel command ini dipanggil
+- Channel `#warnings`
+- DM User
+'''
+ASCENDKICK_BRIEF = 'Command untuk menaikkan warn ke kick'
+ASCENDKICK = '''
+Untuk menaikkan warn ke kick, user harus berada pada warn level 2
+Command ini akan menanyakan konfirmasi sebelum dieksekusi
+
+Command ini akan mengirim pesan pada 3 channel:
+- Channel command ini dipanggil
+- Channel `#warnings`
+- DM User
+'''
+ASCENDBAN_BRIEF = 'Command untuk menaikkan warn ke ban'
+ASCENDBAN = '''
+Untuk menaikkan warn ke ban, user harus berada pada warn level 2
+Command ini akan menanyakan konfirmasi sebelum dieksekusi
+
+Command ini akan mengirim pesan pada 3 channel:
+- Channel command ini dipanggil
+- Channel `#warnings`
+- DM User
+'''
 
 # Utils
 BACKUP_BRIEF = 'Command untuk membackup data moderasi'
