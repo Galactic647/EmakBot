@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-import os
 
 from globals import BACKUP_INTERVAL, OWNER_ID
 from core import custom_help as ch
@@ -10,8 +9,10 @@ from cogs.utils import Utils
 from discord.ext import commands
 import discord
 
+import os
+
 client = commands.Bot(command_prefix='?')
-client.owner_id = OWNER_ID  # Galactic#6270
+client.owner_id = OWNER_ID
 
 
 @client.event
