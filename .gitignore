@@ -5,7 +5,6 @@ __pycache__/
 
 # Dev Stuff
 backup
-*.log
 
 # C extensions
 *.so
