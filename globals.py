@@ -1,3 +1,4 @@
+from collections import namedtuple
 import re
 
 USER_PREFIX = {
@@ -44,12 +45,14 @@ PATTERN = re.compile(r'''
     ((?P<detik>-?\d+)\sdetik)?
     ''', re.VERBOSE | re.IGNORECASE)
 
-CHANNEL_IDS = (992710913364860968, 992024930503901215)  # (meeting-room, warnings)
+CHANNELS = namedtuple('CHANNEL_IDS', 'bot_development, warnings, moderation')
+CHANNEL_IDS = CHANNELS(992710913364860968, 992024930503901215, 992111788944543794)
 GUILD_ID = 975761472087007242  # Sebud Gang
 OWNER_ID = 470045943698292739  # Galactic#6270
 
 RESTRICT = True  # Only send to #warnings if False
 ALLOW_DM = True  # Only send dm if true
+DEVELOPMENT = True  # True if still in development
 
 BACKUP_INTERVAL = 3600  # 1 Hour
 MAX_BACKUP_FOLDERS = 7  # A week
