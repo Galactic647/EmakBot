@@ -1,5 +1,5 @@
-from EmakBot.globals import ADMIN_PREFIX, USER_PREFIX, CHANNEL_IDS, RESTRICT, warn_list, mute_list
-from EmakBot.core import functions as func
+from globals import ADMIN_PREFIX, USER_PREFIX, CHANNEL_IDS, RESTRICT, warn_list, mute_list
+from core import functions as func
 
 import discord
 
