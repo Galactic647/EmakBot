@@ -1,0 +1,26 @@
+{
+    "warn_list": {
+        "663115749858067132": {
+            "created_at": "09/07/2022 23.51.07 WIB",
+            "created_at_as_dict": {
+                "years": 2022,
+                "months": 7,
+                "days": 9,
+                "hours": 23,
+                "minutes": 51,
+                "seconds": 7
+            },
+            "duration": 863884,
+            "duration_str": "10 hari",
+            "id_": "663115749858067132",
+            "level": 1,
+            "moderator": "Windter#8403",
+            "moderator_id": 651378630810664970,
+            "reason": "Toxic di Livestream Youtube",
+            "stop": false,
+            "user": "wisnu#1616",
+            "user_id": 689474649154781208
+        }
+    },
+    "mute_list": {}
+}
