@@ -12,7 +12,7 @@ KICK = KICK_BRIEF
 
 # Mutes
 MUTE_BRIEF = 'Command untuk memberikan mute kepada user'
-MUTE = '''
+MUTE = f'''
 Mute ini adalah tipe mute server dimana user yang dimute tidak akan bisa
 mengakes seluruh channel di server
 
@@ -34,7 +34,7 @@ Command ini akan mengirim pesan pada 3 channel:
 - DM User
 '''
 LSMUTE_BRIEF = 'Command untuk memberikan livestream mute kepada user'
-LSMUTE = '''
+LSMUTE = f'''
 Mute ini adalah tipe mute livestream dimana user yang dimute tidak akan bisa
 mengakses channel livestream
 
@@ -42,9 +42,9 @@ Mute sendiri memiliki durasi default yaitu: `{DEFAUT_DURATION.get("mute")}`
 Jika parameter `[duration]` tidak diberikan maka akan diambil durasi default
 
 Untuk tipe mute ini ada pilihan durasi `Permanent` dimana mute ini tidak akan
-pernah dicabut kecuali menggunakan `?unlsmute`
+pernah dicabut kecuali menggunakan `unlsmute`
 Durasi `Permanent` akan diperlihatkan sebagai `-1 Hari` ketika menggunakan
-`?mutes`
+`muteinfo`
 
 Command ini akan mengirim pesan pada 3 channel:
 - Channel command ini dipanggil
@@ -60,14 +60,20 @@ Command ini akan mengirim pesan pada 3 channel:
 - Channel `#warnings`
 - DM User
 '''
-SILENTMUTE_BRIEF = ''
-SILENTMUTE = ''
-SILENTUNMUTE_BRIEF = ''
-SILENTUNMUTE = ''
-SILENTLSMUTE_BRIEF = ''
-SILENTLSMUTE = ''
-SILENTUNLSMUTE_BRIEF = ''
-SILENTUNLSMUTE = ''
+SILENTMUTE_BRIEF = 'Command untuk memberikan mute kepada user **[Not Safe]**'
+SILENTMUTE = '''
+Command ini seharusnya tidak pernah digunakan kecuali untuk
+situasi tertentu
+
+Command ini akan mengirim pesan hanya pada 1 channel:
+- Channel command ini dipanggil
+'''
+SILENTUNMUTE_BRIEF = 'Command untuk mencabut mute user **[Not Safe]**'
+SILENTUNMUTE = SILENTMUTE
+SILENTLSMUTE_BRIEF = 'Command untuk memberikan livestream mute kepada user **[Not Safe]**'
+SILENTLSMUTE = SILENTMUTE
+SILENTUNLSMUTE_BRIEF = 'Command untuk mencabut livestream mute kepada user **[Not Safe]**'
+SILENTUNLSMUTE = SILENTMUTE
 MUTEINFO_BRIEF = 'Command untuk menampilkan seluruh mute yang sedang aktif'
 MUTEINFO = f'''
 {MUTEINFO_BRIEF}
@@ -109,21 +115,9 @@ Command ini akan mengirim pesan pada 3 channel:
 - DM User
 '''
 SILENTWARN_BRIEF = 'Command untuk memberikan warn kepada user **[Not Safe]**'
-SILENTWARN = '''
-Command ini seharusnya tidak pernah digunakan kecuali ada masalah ketika
-bot mencoba untuk menrecovery data moderasi
-
-Command ini akan mengirim pesan hanya pada 1 channel:
-- Channel command ini dipanggil
-'''
+SILENTWARN = SILENTMUTE
 SILENTREMOVEWARN_BRIEF = 'Command untuk mencabut warn dari user **[Not Safe]**'
-SILENTREMOVEWARN = '''
-Command ini seharusnya tidak pernah digunakan kecuali ada masalah ketika
-bot mencoba untuk menrecovery data moderasi
-
-Command ini akan mengirim pesan hanya pada 1 channel:
-- Channel command ini dipanggil
-'''
+SILENTREMOVEWARN = SILENTMUTE
 WARNINFO_BRIEF = 'Command untuk menampilkan seluruh warning yang sedang aktif'
 WARNINFO = f'''
 {WARNINFO_BRIEF}
@@ -170,7 +164,8 @@ Data yang dibackup akan disimpan pada server dan juga dikirim
 ke channel command ini dipanggil
         
 Data yang dibackup sendiri memiliki limit maksimal yaitu 7 hari,
-data yang backup yang sudah melebihi limit ini akan dihapus secara otomatis
+backup otomatis dan manual dihitung terpisah.
+Data yang backup yang sudah melebihi limit ini akan dihapus secara otomatis
 '''
 LISTBACKUP_BRIEF = 'Command untuk memberikan list folder backup'
 LISTBACKUP = 'Folder backup akan diperlihatkan berdasarkan tipe dan tanggalnya'
@@ -183,8 +178,11 @@ RELOAD_BRIEF = 'Command untuk mereload data moderasi'
 RELOAD = '''
 Data yang direload akan dikembalikan seperti semula
 dimana durasi dari setiap item moderasi akan di kurangi
-berdasarkan waktu yang telah berlalu hingga command ini
+berdasarkan waktu yang telah berlalu ketika command ini
 dipanggil
+
+Jika waktu yang telah berlalu menunjukkan angka negatif
+maka `duration` akan di set ke `1 detik`
 '''
 LOADEXT_BRIEF = 'Command untuk mengload extensi bot **[Bot Owner Only]**'
 LOADEXT = '''
