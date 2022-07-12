@@ -1,4 +1,4 @@
-from EmakBot.globals import PATTERN, CHANNEL_IDS, ALLOW_DM, RESTRICT
+from globals import PATTERN, CHANNEL_IDS, ALLOW_DM, RESTRICT
 
 import discord
 

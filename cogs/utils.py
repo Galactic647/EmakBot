@@ -1,6 +1,6 @@
-from EmakBot.globals import GUILD_ID, MAX_BACKUP_FOLDERS, ERROR_MESSAGE, mute_list, warn_list
-from EmakBot.core import functions as func, moderation as mod, descriptions as desc, decorators
-from EmakBot.core.logger import logger
+from globals import GUILD_ID, MAX_BACKUP_FOLDERS, ERROR_MESSAGE, mute_list, warn_list
+from core import functions as func, moderation as mod, descriptions as desc, decorators
+from core.logger import logger
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional

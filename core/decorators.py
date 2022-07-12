@@ -1,4 +1,4 @@
-from EmakBot.globals import CHANNEL_IDS, warn_list, mute_list
+from globals import CHANNEL_IDS, warn_list, mute_list
 
 import discord
 

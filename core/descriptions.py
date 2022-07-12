@@ -1,4 +1,4 @@
-from EmakBot.globals import DEFAUT_DURATION
+from globals import DEFAUT_DURATION
 
 # Ban
 BAN_BRIEF = 'Command untuk memban user dari server'

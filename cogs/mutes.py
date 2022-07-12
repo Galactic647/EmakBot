@@ -1,6 +1,6 @@
-from EmakBot.globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, mute_list
-from EmakBot.core import functions as func, descriptions as desc, moderation as mod, decorators
-from EmakBot.core.logger import logger
+from globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, mute_list
+from core import functions as func, descriptions as desc, moderation as mod, decorators
+from core.logger import logger
 
 from discord.ext import commands
 import discord

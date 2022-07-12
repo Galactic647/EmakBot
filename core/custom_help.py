@@ -1,5 +1,5 @@
-from EmakBot.core.functions import color_picker
-from EmakBot.globals import VISIBLE_COGS
+from core.functions import color_picker
+from globals import VISIBLE_COGS
 from discord.ext import commands
 import discord
 

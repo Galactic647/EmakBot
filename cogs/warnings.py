@@ -1,7 +1,7 @@
-from EmakBot.globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, ERROR_MESSAGE, warn_list
-from EmakBot.core import functions as func, descriptions as desc, decorators
-from EmakBot.core.moderation import Warn
-from EmakBot.core.logger import logger
+from globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, ERROR_MESSAGE, warn_list
+from core import functions as func, descriptions as desc, decorators
+from core.moderation import Warn
+from core.logger import logger
 
 from discord.ext import commands
 import discord

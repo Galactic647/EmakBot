@@ -1,5 +1,5 @@
-from EmakBot.core import decorators, descriptions as desc
-from EmakBot.core.logger import logger
+from core import decorators, descriptions as desc
+from core.logger import logger
 
 from discord.ext import commands
 import discord
