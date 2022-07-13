@@ -1,5 +1,10 @@
+from dotenv import load_dotenv
+
 from collections import namedtuple
 import re
+import os
+
+load_dotenv()
 
 USER_PREFIX = {
     'warn': '**Sebud Gang:** Anda telah di :warning: warn\n'
@@ -46,9 +51,9 @@ PATTERN = re.compile(r'''
     ''', re.VERBOSE | re.IGNORECASE)
 
 CHANNELS = namedtuple('CHANNEL_IDS', 'bot_development, warnings, moderation')
-CHANNEL_IDS = CHANNELS(992710913364860968, 992024930503901215, 992111788944543794)
-GUILD_ID = 975761472087007242  # Sebud Gang
-OWNER_ID = 470045943698292739  # Galactic#6270
+CHANNEL_IDS = CHANNELS(os.getenv('BOT_DEV_CH_ID'), os.getenv('WARN_CH_ID'), os.getenv('MOD_CH_ID'))
+GUILD_ID = os.getenv('GUILD_ID')
+OWNER_ID = os.getenv('AUTHOR_ID')
 
 RESTRICT = True  # Only send to #warnings if False
 ALLOW_DM = True  # Only send dm if true
