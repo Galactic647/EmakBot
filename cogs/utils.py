@@ -1,6 +1,7 @@
 from globals import GUILD_ID, MAX_BACKUP_FOLDERS, ERROR_MESSAGE, mute_list, warn_list
 from core import functions as func, moderation as mod, descriptions as desc, decorators
 from core.logger import logger
+import globals
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -20,8 +21,7 @@ class Utils(commands.Cog):
     async def regular_backup(self, interval: int):
         try:
             while True:
-                file = self._backup(type_='auto')
-                if file:
+                if self._backup(type_='auto'):
                     logger.info('Data backed up! [auto]')
                 await asyncio.sleep(interval)
         except Exception as e:
@@ -69,6 +69,7 @@ class Utils(commands.Cog):
             try:
                 file = self._backup('manual')
                 attachment = discord.File(file)
+                logger.info(f'User {ctx.author} use manual backup')
                 await ctx.channel.send(file=attachment, content=':ok_hand: Backed up!, filenya bisa dicek dibawah')
             except Exception as e:
                 await ctx.channel.send(ERROR_MESSAGE.format(e))
@@ -92,6 +93,7 @@ class Utils(commands.Cog):
                     embed.add_field(name=backups.capitalize(), value=f'```{"".join(value)}```', inline=False)
                 embed.set_footer(text=f'Total backup: {total_backup}')
 
+                logger.info(f'User {ctx.author} user {ctx.invoked_with}')
                 await ctx.channel.send(embed=embed)
             except Exception as e:
                 await ctx.channel.send(ERROR_MESSAGE.format(e))
@@ -137,6 +139,7 @@ class Utils(commands.Cog):
                     attachment = discord.File(f'backup/{type_.lower()}/{date}/{file}')
 
                 embed.set_footer(text=f'Hari ini pada {func.get_time(no_date=True, thformat=True)}')
+                logger.info(f'User {ctx.author} user {ctx.invoked_with}')
                 if attachment is None:
                     await ctx.channel.send(embed=embed)
                 else:
@@ -147,7 +150,7 @@ class Utils(commands.Cog):
 
     @commands.command(brief=desc.RELOAD_BRIEF, description=desc.RELOAD)
     @decorators.in_channels(has_user=False, has_target=False)
-    async def reload(self, ctx, type_: str, date: str, file: str) -> None:  # TODO Recheck
+    async def reload(self, ctx, type_: str, date: str, file: str) -> None:
         loop = asyncio.get_event_loop()
         mute_role = discord.utils.get(ctx.author.guild.roles, name='mod.Mute')
         lsmute_role = discord.utils.get(ctx.author.guild.roles, name='Livestream mod.Mute')
@@ -229,6 +232,7 @@ class Utils(commands.Cog):
                             mute_list[id_] = mute_obj
                             asyncio.ensure_future(mute_list[id_].count_down())
 
+                logger.info(f'User {ctx.author} just reload a backup (backup/{type_.lower()}/{date}/{file})')
                 await ctx.channel.send(':ok_hand: Reloaded!')
                 loop.run_forever()
             except Exception as e:
@@ -298,9 +302,37 @@ class Utils(commands.Cog):
                 return
         await ctx.channel.send(f':ok_hand: All extension reloaded!')
 
+    @commands.command(brief=desc.CHANGEFLAG_BRIEF, description=desc.CHANGEFLAG)
+    @commands.is_owner()
+    @decorators.in_channels(has_user=False, has_target=False)
+    async def changeflag(self, ctx, flag: str, value: bool) -> None:
+        if flag.upper() not in ('RESTRICT', 'ALLOW_DM', 'DEVELOPMENT'):
+            await ctx.channel.send(f'Flag {flag.upper()} tidak ditemukan')
+            return
+        elif not isinstance(value, bool):
+            await ctx.channel.send(f':warning: Illegal value')
+            return
+
+        if flag.upper() == 'RESTRICT':
+            globals.RESTRICT = value
+        elif flag.upper() == 'ALLOW_DM':
+            globals.ALLOW_DM = value
+        elif flag.upper() == 'DEVELOPMENT':
+            globals.DEVELOPMENT = value
+        await ctx.channel.send(f'Flag `{flag.upper()}` diubah ke `{value}`')
+
+    @commands.command(brief=desc.CHECKFLAG_BRIEF, description=desc.CHECKFLAG)
+    @decorators.in_channels(has_user=False, has_target=False)
+    async def checkflag(self, ctx, flag: str) -> None:
+        if flag.upper() not in ('RESTRICT', 'ALLOW_DM', 'DEVELOPMENT'):
+            await ctx.channel.send(f'Flag {flag.upper()} tidak ditemukan')
+            return
+        await ctx.channel.send(f'Flag `{flag.upper()} = {getattr(globals, flag.upper())}`')
+
     @commands.command(brief=desc.PING_BRIEF, description=desc.PING)
     @decorators.in_channels(has_user=False, has_target=False)
     async def ping(self, ctx):
+        logger.info(f'User {ctx.author} user {ctx.invoked_with}')
         await ctx.channel.send(f'Ping : {round(self.bot.latency * 1000, 2)}ms')
 
     @commands.command(brief=desc.SHUTDOWN_BRIEF, description=desc.SHUTDOWN)
@@ -313,8 +345,8 @@ class Utils(commands.Cog):
         try:
             await ctx.channel.send('Apakah anda yakin ingin menghentikan bot? [Y/N]')
             reply = await self.bot.wait_for('message', check=check, timeout=15)
-            self._backup(type_='auto')
             if reply.content.lower() == 'y':
+                self._backup(type_='auto')
                 await ctx.channel.send('See you later!')
                 logger.info('Bot shutdown')
                 await self.bot.logout()
