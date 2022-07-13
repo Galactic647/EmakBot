@@ -1,4 +1,4 @@
-from globals import ADMIN_PREFIX, USER_PREFIX, CHANNEL_IDS, RESTRICT, warn_list, mute_list
+from globals import ADMIN_PREFIX, USER_PREFIX, CHANNEL_IDS, DEVELOPMENT, RESTRICT, ALLOW_DM, warn_list, mute_list
 from core import functions as func
 
 import discord
@@ -41,6 +41,17 @@ class Moderation(object):
     async def interrupt(self) -> None:
         self.stop = True
 
+    async def process_message(self, msg: str, user_msg: str) -> None:
+        id_ = CHANNEL_IDS.bot_development if DEVELOPMENT else CHANNEL_IDS.moderation
+        channel = await self.bot.fetch_channel(id_)
+        await channel.send(msg)
+
+        if ALLOW_DM:
+            await self.user.send(user_msg)
+        if not RESTRICT:
+            warn_channel = await self.bot.fetch_channel(CHANNEL_IDS.warnings)
+            await warn_channel.send(msg)
+
     def info(self) -> dict:
         data = []
         for var in dir(self):
@@ -65,16 +76,8 @@ class Warn(Moderation):
             await asyncio.sleep(1)
 
         if not self.stop:
-            dm = await self.user.create_dm()
-            channel = self.bot.get_channel(id=CHANNEL_IDS[0])
-
-            msg = ADMIN_PREFIX['remove_warn'].format(self.user, 'Durasi habis')
-            await channel.send(msg)
-            await dm.send(USER_PREFIX['remove_warn'].format('Durasi habis'))
-
-            if not RESTRICT:
-                warn_channel = self.bot.get_channel(id=CHANNEL_IDS[1])
-                await warn_channel.send(msg)
+            await self.process_message(ADMIN_PREFIX['remove_warn'].format(self.user, 'Durasi habis'),
+                                       USER_PREFIX['remove_warn'].format('Durasi habis'))
             del warn_list[self.id_]
         else:
             self.stop = False
@@ -94,17 +97,9 @@ class Mute(Moderation):
             await asyncio.sleep(1)
 
         if not self.stop:
-            dm = await self.user.create_dm()
-            channel = self.bot.get_channel(id=CHANNEL_IDS[0])
             mute_role = discord.utils.get(self.user.guild.roles, name='Mute')
-
-            msg = ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis')
-            await channel.send(msg)
-            await dm.send(USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
-
-            if not RESTRICT:
-                mute_channel = self.bot.get_channel(id=CHANNEL_IDS[1])
-                await mute_channel.send(msg)
+            await self.process_message(ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
+                                       USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
             await self.user.remove_roles(mute_role)
             del mute_list[self.id_]
         else:
@@ -129,17 +124,9 @@ class LSMute(Moderation):
             await asyncio.sleep(1)
 
         if not self.duration and not self.stop and not self.permanent:
-            dm = await self.user.create_dm()
-            channel = self.bot.get_channel(id=CHANNEL_IDS[0])
             mute_role = discord.utils.get(self.user.guild.roles, name='Livestream Mute')
-
-            msg = ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis')
-            await channel.send(msg)
-            await dm.send(USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
-
-            if not RESTRICT:
-                mute_channel = self.bot.get_channel(id=CHANNEL_IDS[1])
-                await mute_channel.send(msg)
+            await self.process_message(ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
+                                       USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
             await self.user.remove_roles(mute_role)
             del mute_list[self.id_]
         else:
