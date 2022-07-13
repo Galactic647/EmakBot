@@ -22,7 +22,9 @@ USER_PREFIX = {
             '**Reason:** {2}',
     'unmute': '**Sebud Gang:** Anda telah di :speaker: unmute\n'
               '**Type:** {0}\n'
-              '**Reason:** {1}'
+              '**Reason:** {1}',
+    'kick': '**Sebud Gang:** Anda telah di :warning: kick\n'
+            '**Reason** {0}'
 }
 ADMIN_PREFIX = {
     'lower_warn': '**Info:** :warning: Warn user `{0}` telah diturunkan\n'
@@ -32,7 +34,9 @@ ADMIN_PREFIX = {
                    '**Reason:** {1}',
     'unmute': '**Info:** :mute: User `{0}` telah diunmute\n'
               '**Type:** {1}\n'
-              '**Reason:** {2}'
+              '**Reason:** {2}',
+    'kick': '**Info:** :warning: User {0} telah di kick\n'
+            '**Reason:** {1}'
 }
 ERROR_MESSAGE = ':warning: Ada sesuatu yang salah!\nError Log\n```{0}```'
 
@@ -51,9 +55,9 @@ PATTERN = re.compile(r'''
     ''', re.VERBOSE | re.IGNORECASE)
 
 CHANNELS = namedtuple('CHANNEL_IDS', 'bot_development, warnings, moderation')
-CHANNEL_IDS = CHANNELS(os.getenv('BOT_DEV_CH_ID'), os.getenv('WARN_CH_ID'), os.getenv('MOD_CH_ID'))
-GUILD_ID = os.getenv('GUILD_ID')
-OWNER_ID = os.getenv('AUTHOR_ID')
+CHANNEL_IDS = CHANNELS(int(os.getenv('BOT_DEV_CH_ID')), int(os.getenv('WARN_CH_ID')), int(os.getenv('MOD_CH_ID')))
+GUILD_ID = int(os.getenv('GUILD_ID'))
+OWNER_ID = int(os.getenv('AUTHOR_ID'))
 
 RESTRICT = True  # Only send to #warnings if False
 ALLOW_DM = True  # Only send dm if true
