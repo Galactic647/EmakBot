@@ -69,7 +69,6 @@ def get_time(no_date: Optional[bool] = False, date_only: Optional[bool] = False,
 
 
 def elapsed_time(start: dict, end: dict) -> str:
-    # TODO implement a more accurate calculation for longer time range
     time_scale = {
         '0': 'tahun',
         '1': 'bulan',
@@ -87,7 +86,10 @@ def elapsed_time(start: dict, end: dict) -> str:
         if scale == 'tahun':
             elapsed['hari'] = (e - s) * 365
         elif scale == 'bulan':
-            elapsed['hari'] += (e - s) * 30
+            if diff := (e - s) < 0:
+                elapsed['hari'] += (12 + diff) * 30 - 365
+            else:
+                elapsed['hari'] += (e - s) * 30
         elif diff := (e - s) < 0:
             elapsed[time_scale.get(str(index - 1))] -= 1
             elapsed[scale] = 60 + diff
@@ -160,7 +162,7 @@ def embedder(type_: str, msg_id: str, moderator, user, avatar, reason: str, dura
 
 
 async def process_message(self, ctx, msg, user, user_msg) -> None:
-    warn_channel = await self.bot.fetch_channel(CHANNEL_IDS[1])
+    warn_channel = await self.bot.fetch_channel(CHANNEL_IDS.warnings)
 
     if isinstance(msg, discord.Embed):
         await ctx.channel.send(embed=msg)
