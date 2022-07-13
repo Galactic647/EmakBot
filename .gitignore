@@ -6,6 +6,9 @@ __pycache__/
 # Dev Stuff
 backup/
 
+# Discord
+backup/discord.xml
+
 # C extensions
 *.so
 
