@@ -161,9 +161,9 @@ class Utils(commands.Cog):
                     await ctx.channel.send('File backup tidak ditemukan')
                     return
 
-                with open(f'backup/{type_.lower()}/{date}/{file}', 'r') as file:
-                    data = json.load(file)
-                    file.close()
+                with open(f'backup/{type_.lower()}/{date}/{file}', 'r') as bak_file:
+                    data = json.load(bak_file)
+                    bak_file.close()
 
                 for type_, items in data.items():
                     for id_, value in items.items():
