@@ -204,6 +204,14 @@ RELOADALLEXT = '''
 Command ini digunakan ketika ingin mereload semua extensi yang
 digunakan botnya
 '''
+CHANGEFLAG_BRIEF = 'Command untuk mengganti Global Flag **[Bot Owner Only]**'
+CHANGEFLAG = '''
+Command ini digunakan ketika ingin mengubah salah satu flag
+yang digunakan botnya, seperti membolehkan dm, development dan
+lain-lain
+'''
+CHECKFLAG_BRIEF = 'Command untuk mengecek nilai Flag'
+CHECKFLAG = CHECKFLAG_BRIEF
 PING_BRIEF = 'Command untuk melihat latency bot'
 PING = PING_BRIEF
 SHUTDOWN_BRIEF = 'Command untuk menghentikan bot **[Bot Owner Only]**'
