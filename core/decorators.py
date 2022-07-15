@@ -74,18 +74,24 @@ def target_check(type_: str):
             raise ValueError(f'Unknown type {type_}')
 
         async def predicate(self, ctx, target: Union[discord.Member, str], *args, **kwargs):
-            mod_id = None
+            msg_id = None
             if isinstance(target, discord.Member):
                 if target not in [value.user for _, value in mod_obj.items()]:
                     await ctx.channel.send(f'Tidak ada :warning: {type_.lower()} dengan user {target}')
                     return
-                mod_id = [value for _, value in mod_obj.items()][0].id_
+                msg_id = [value for _, value in mod_obj.items() if value.user == target][0].id_
             elif isinstance(target, str):
-                if target not in mod_obj:
-                    await ctx.channel.send(f'Tidak ada :warning: {type_.lower()} dengan id {target}')
-                    return
-                mod_id = target
-            await func(self, ctx, mod_id, *args, **kwargs)
+                if target in mod_obj:
+                    msg_id = target
+                else:
+                    guild = await self.bot.fetch_guild(GUILD_ID)
+                    try:
+                        target = await guild.fetch_member(target)
+                        msg_id = target.id
+                    except discord.HTTPException:
+                        await ctx.channel.send(f'Tidak ada user ataupun {type_} dengan id {target} di server ini')
+                        return
+            await func(self, ctx, msg_id, *args, **kwargs)
 
         predicate.__name__ = func.__name__
         predicate.__signature__ = inspect.signature(func)
