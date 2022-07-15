@@ -29,7 +29,7 @@ class Warnings(commands.Cog):
                         return
 
                     duration = duration if duration is not None else DEFAUT_DURATION.get('warn-2')
-                    embed = func.embedder('Warning', msg_id, f'<@{ctx.author.id}>', user, user.avatar_url, reason,
+                    embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
                                           duration, level=2)
 
                     warn_obj.duration = func.time_process(duration)
@@ -47,7 +47,7 @@ class Warnings(commands.Cog):
                 duration = DEFAUT_DURATION.get('warn-1') if level == 1 else DEFAUT_DURATION.get('warn-2')
 
             warn_list[msg_id] = Warn(self.bot, ctx.author, user, duration, reason, msg_id, level)
-            embed = func.embedder('Warning', msg_id, f'<@{ctx.author.id}>', user, user.avatar_url, reason,
+            embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
                                   duration, level)
             await func.process_message(self, ctx, embed, user, USER_PREFIX['warn'].format(level, duration, reason))
 
@@ -119,7 +119,7 @@ class Warnings(commands.Cog):
                     warn_obj.level = 2
 
                     if not silent:
-                        embed = func.embedder('Warning', msg_id, f'<@{ctx.author.id}>', user, user.avatar_url, reason,
+                        embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
                                               duration, level=2)
                         await ctx.channel.send(embed=embed)
                     logger.info(f'User {ctx.author} used a warning, info\n'
@@ -133,7 +133,7 @@ class Warnings(commands.Cog):
 
             warn_list[msg_id] = Warn(self.bot, ctx.author, user, duration, reason, msg_id, level)
             if not silent:
-                embed = func.embedder('Warning', msg_id, f'<@{ctx.author.id}>', user, user.avatar_url, reason,
+                embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
                                       duration, level)
                 await ctx.channel.send(embed=embed)
 
@@ -199,14 +199,37 @@ class Warnings(commands.Cog):
     @commands.command(brief=desc.ASCENDKICK_BRIEF, description=desc.ASCENDKICK)
     @decorators.in_channels(has_target=True)
     @decorators.target_check(type_='warn')
-    async def ascendkick(self, ctx, target: Union[discord.Member, str], duration: Optional[str] = None) -> None:
-        pass  # warn_obj = warn_list.get(target)
+    async def ascendkick(self, ctx, target: Union[discord.Member, str], reason: str) -> None:
+        warn_obj = warn_list.get(target)
+
+        if warn_obj.level < 2:
+            await ctx.channel.send(f':warning: Level warn user {warn_obj.user} tidak cukup')
+            return
+
+        try:
+            del warn_list[target]
+            await ctx.invoke(self.bot.get_command('kick'), user=warn_obj.user, reason=reason)
+        except Exception as e:
+            await ctx.channel.send(ERROR_MESSAGE.format(e))
+            logger.error(e)
 
     @commands.command(brief=desc.ASCENDBAN_BRIEF, description=desc.ASCENDBAN)
     @decorators.in_channels(has_target=True)
     @decorators.target_check(type_='warn')
-    async def ascendban(self, ctx, target: Union[discord.Member, str], duration: Optional[str] = None) -> None:
-        pass  # warn_obj = warn_list.get(target)
+    async def ascendban(self, ctx, target: Union[discord.Member, str], reason: str,
+                        duration: Optional[str] = 'Permanent') -> None:
+        warn_obj = warn_list.get(target)
+
+        if warn_obj.level < 2:
+            await ctx.channel.send(f':warning: Level warn user {warn_obj.user} tidak cukup')
+            return
+
+        try:
+            del warn_list[target]
+            await ctx.invoke(self.bot.get_command('ban'), user=warn_obj.user, reason=reason, duration=duration)
+        except Exception as e:
+            await ctx.channel.send(ERROR_MESSAGE.format(e))
+            logger.error(e)
 
 
 def setup(bot):
