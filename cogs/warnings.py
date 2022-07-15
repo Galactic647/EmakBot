@@ -1,4 +1,4 @@
-from globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, ERROR_MESSAGE, warn_list
+from globals import DEFAUT_DURATION, USER_PREFIX, ADMIN_PREFIX, warn_list
 from core import functions as func, descriptions as desc, decorators
 from core.moderation import Warn
 from core.logger import logger
@@ -7,6 +7,7 @@ from discord.ext import commands
 import discord
 
 from typing import Optional, Union
+import asyncio
 import json
 
 
@@ -15,47 +16,40 @@ class Warnings(commands.Cog):
         self.bot = bot
 
     @commands.command(brief=desc.WARN_BRIEF, description=desc.WARN)
-    @decorators.in_channels(has_user=True)
+    @decorators.in_channels(has_target=True)
     @decorators.self_check
-    async def warn(self, ctx, user: discord.Member, reason: str,
+    async def warn(self, ctx, target: Union[discord.Member, str], reason: str,
                    level: Optional[int] = 1, duration: Optional[str] = None) -> None:
         level = max(1, min(2, level))
 
-        try:
-            for msg_id, warn_obj in warn_list.items():
-                if user == warn_obj.user:
-                    if warn_obj.level + 1 > 2:
-                        await ctx.channel.send(f'User `{user}` sudah berada pada :warning: warn level tertinggi')
-                        return
-
-                    duration = duration if duration is not None else DEFAUT_DURATION.get('warn-2')
-                    embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
-                                          duration, level=2)
-
-                    warn_obj.duration = func.time_process(duration)
-                    warn_obj.reason = reason
-                    warn_obj.level = 2
-
-                    await func.process_message(self, ctx, embed, user, USER_PREFIX['warn'].format(2, duration, reason))
-                    logger.info(f'User {ctx.author} used a warning, info\n'
-                                f'{json.dumps(warn_list[msg_id].info(), indent=4)}')
-                    await warn_obj.count_down()
+        for msg_id, warn_obj in warn_list.items():
+            if target == warn_obj.user:
+                if warn_obj.level + 1 > 2:
+                    await ctx.channel.send(f'User `{target}` sudah berada pada :warning: warn level tertinggi')
                     return
 
-            msg_id = func.generate_id()
-            if duration is None:
-                duration = DEFAUT_DURATION.get('warn-1') if level == 1 else DEFAUT_DURATION.get('warn-2')
+                duration = duration if duration is not None else DEFAUT_DURATION.get('warn-2')
+                embed = func.embedder('Warning', msg_id, ctx.author.mention, target, target.avatar_url, reason,
+                                      duration, level=2)
 
-            warn_list[msg_id] = Warn(self.bot, ctx.author, user, duration, reason, msg_id, level)
-            embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
-                                  duration, level)
-            await func.process_message(self, ctx, embed, user, USER_PREFIX['warn'].format(level, duration, reason))
+                warn_obj.duration = func.time_process(duration)
+                warn_obj.reason = reason
+                warn_obj.level = 2
 
-            logger.info(f'User {ctx.author} used a warning, info\n{json.dumps(warn_list[msg_id].info(), indent=4)}')
-            await warn_list[msg_id].count_down()
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+                await func.process_message(self, ctx, embed, target, USER_PREFIX['warn'].format(2, duration, reason))
+                asyncio.ensure_future(warn_obj.count_down())
+                return
+
+        msg_id = func.generate_id()
+        if duration is None:
+            duration = DEFAUT_DURATION.get('warn-1') if level == 1 else DEFAUT_DURATION.get('warn-2')
+
+        warn_list[msg_id] = Warn(self.bot, ctx.author, target, duration, reason, msg_id, level)
+        embed = func.embedder('Warning', msg_id, ctx.author.mention, target, target.avatar_url, reason,
+                              duration, level)
+        await func.process_message(self, ctx, embed, target, USER_PREFIX['warn'].format(level, duration, reason))
+
+        asyncio.ensure_future(warn_list[msg_id].count_down())
 
     @commands.command(brief=desc.REMOVEWARN_BRIEF, description=desc.REMOVEWARN)
     @decorators.in_channels(has_target=True)
@@ -67,7 +61,6 @@ class Warnings(commands.Cog):
         msg = ADMIN_PREFIX['remove_warn'].format(warn_obj.user, reason)
         await func.process_message(self, ctx, msg, warn_obj.user, USER_PREFIX['remove_warn'].format(reason))
 
-        logger.info(f'User {ctx.author} removed a warning, info\nuser: {warn_obj.user}\nreason: {reason}')
         del warn_list[target]
 
     @commands.command(brief=desc.LOWERWARN_BRIEF, description=desc.LOWERWARN)
@@ -85,63 +78,51 @@ class Warnings(commands.Cog):
         if duration is None:
             duration = DEFAUT_DURATION.get('warn-1')
 
-        try:
-            warn_obj.level -= 1
-            warn_obj.duration = func.time_process(duration)
-            msg = ADMIN_PREFIX['lower_warn'].format(warn_obj.user, warn_obj.level, duration, reason)
-            await func.process_message(self, ctx, msg, warn_obj.user,
-                                       USER_PREFIX['lower_warn'].format(warn_obj.level, duration, reason))
+        warn_obj.level -= 1
+        warn_obj.duration = func.time_process(duration)
+        msg = ADMIN_PREFIX['lower_warn'].format(warn_obj.user, warn_obj.level, duration, reason)
+        await func.process_message(self, ctx, msg, warn_obj.user,
+                                   USER_PREFIX['lower_warn'].format(warn_obj.level, duration, reason))
 
-            logger.info(f'User {ctx.author} lower a warning, info\n{json.dumps(warn_obj.info())}')
-            await warn_obj.count_down()
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+        asyncio.ensure_future(warn_obj.count_down())
 
     @commands.command(brief=desc.SILENTWARN_BRIEF, description=desc.SILENTWARN)
     @decorators.in_channels(has_target=True)
     @decorators.self_check
-    async def silentwarn(self, ctx, user: discord.Member, reason: str, level: Optional[int] = 1,
+    async def silentwarn(self, ctx, target: Union[discord.Member, str], reason: str, level: Optional[int] = 1,
                          duration: Optional[str] = None, silent: Optional[bool] = False) -> None:
         level = max(1, min(2, level))
 
-        try:
-            for msg_id, warn_obj in warn_list.items():
-                if user == warn_obj.user:
-                    if warn_obj.level + 1 > 2:
-                        await ctx.channel.send(f'User `{user}` sudah berada pada :warning: warn level tertinggi')
-                        return
-
-                    duration = duration if duration is not None else DEFAUT_DURATION.get('warn-2')
-
-                    warn_obj.duration = func.time_process(duration)
-                    warn_obj.reason = reason
-                    warn_obj.level = 2
-
-                    if not silent:
-                        embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
-                                              duration, level=2)
-                        await ctx.channel.send(embed=embed)
-                    logger.info(f'User {ctx.author} used a warning, info\n'
-                                f'{json.dumps(warn_list[msg_id].info(), indent=4)}')
-                    await warn_obj.count_down()
+        for msg_id, warn_obj in warn_list.items():
+            if target == warn_obj.user:
+                if warn_obj.level + 1 > 2:
+                    await ctx.channel.send(f'User `{target}` sudah berada pada :warning: warn level tertinggi')
                     return
 
-            msg_id = func.generate_id()
-            if duration is None:
-                duration = DEFAUT_DURATION.get('warn-1') if level == 1 else DEFAUT_DURATION.get('warn-2')
+                duration = duration if duration is not None else DEFAUT_DURATION.get('warn-2')
 
-            warn_list[msg_id] = Warn(self.bot, ctx.author, user, duration, reason, msg_id, level)
-            if not silent:
-                embed = func.embedder('Warning', msg_id, ctx.author.mention, user, user.avatar_url, reason,
-                                      duration, level)
-                await ctx.channel.send(embed=embed)
+                warn_obj.duration = func.time_process(duration)
+                warn_obj.reason = reason
+                warn_obj.level = 2
 
-            logger.info(f'User {ctx.author} used a warning, info\n{json.dumps(warn_list[msg_id].info(), indent=4)}')
-            await warn_list[msg_id].count_down()
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+                if not silent:
+                    embed = func.embedder('Warning', msg_id, ctx.author.mention, target, target.avatar_url, reason,
+                                          duration, level=2)
+                    await ctx.channel.send(embed=embed)
+                asyncio.ensure_future(warn_obj.count_down())
+                return
+
+        msg_id = func.generate_id()
+        if duration is None:
+            duration = DEFAUT_DURATION.get('warn-1') if level == 1 else DEFAUT_DURATION.get('warn-2')
+
+        warn_list[msg_id] = Warn(self.bot, ctx.author, target, duration, reason, msg_id, level)
+        if not silent:
+            embed = func.embedder('Warning', msg_id, ctx.author.mention, target, target.avatar_url, reason,
+                                  duration, level)
+            await ctx.channel.send(embed=embed)
+
+        asyncio.ensure_future(warn_list[msg_id].count_down())
 
     @commands.command(brief=desc.SILENTREMOVEWARN_BRIEF, description=desc.SILENTREMOVEWARN)
     @decorators.in_channels(has_target=True)
@@ -152,13 +133,13 @@ class Warnings(commands.Cog):
         await warn_obj.interrupt()
         if not silent:
             await ctx.channel.send(ADMIN_PREFIX['remove_warn'].format(warn_obj.user, 'silent'))
-        logger.info(f'User {ctx.author} silently removed a warning, info\nuser: {warn_obj.user}')
+        
         del warn_list[target]
 
     @commands.command(brief=desc.WARNINFO_BRIEF, description=desc.WARNINFO)
-    @decorators.in_channels(has_user=False, has_target=False)
+    @decorators.in_channels(has_target=False)
     async def warninfo(self, ctx) -> None:
-        logger.info(f'User {ctx.author} used {ctx.invoked_with}')
+        
         embed = discord.Embed(title='Warning List', color=func.color_picker())
 
         for index, items in enumerate(warn_list.items()):
@@ -188,13 +169,9 @@ class Warnings(commands.Cog):
             await ctx.channel.send(f':warning: Level warn user {warn_obj.user} tidak cukup')
             return
 
-        try:
-            await ctx.channel.send(f'Warn user {warn_obj.user} telah di ascend ke mute')
-            del warn_list[target]
-            await ctx.invoke(self.bot.get_command('mute'), user=warn_obj.user, reason=reason, duration=duration)
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+        await ctx.channel.send(f'Warn user {warn_obj.user} telah di ascend ke mute')
+        del warn_list[target]
+        await ctx.invoke(self.bot.get_command('mute'), user=warn_obj.user, reason=reason, duration=duration)
 
     @commands.command(brief=desc.ASCENDKICK_BRIEF, description=desc.ASCENDKICK)
     @decorators.in_channels(has_target=True)
@@ -206,12 +183,8 @@ class Warnings(commands.Cog):
             await ctx.channel.send(f':warning: Level warn user {warn_obj.user} tidak cukup')
             return
 
-        try:
-            del warn_list[target]
-            await ctx.invoke(self.bot.get_command('kick'), user=warn_obj.user, reason=reason)
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+        del warn_list[target]
+        await ctx.invoke(self.bot.get_command('kick'), user=warn_obj.user, reason=reason)
 
     @commands.command(brief=desc.ASCENDBAN_BRIEF, description=desc.ASCENDBAN)
     @decorators.in_channels(has_target=True)
@@ -224,12 +197,8 @@ class Warnings(commands.Cog):
             await ctx.channel.send(f':warning: Level warn user {warn_obj.user} tidak cukup')
             return
 
-        try:
-            del warn_list[target]
-            await ctx.invoke(self.bot.get_command('ban'), user=warn_obj.user, reason=reason, duration=duration)
-        except Exception as e:
-            await ctx.channel.send(ERROR_MESSAGE.format(e))
-            logger.error(e)
+        del warn_list[target]
+        await ctx.invoke(self.bot.get_command('ban'), user=warn_obj.user, reason=reason, duration=duration)
 
 
 def setup(bot):
