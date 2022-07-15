@@ -146,15 +146,9 @@ def embedder(type_: str, msg_id: str, moderator, user, avatar, reason: str, dura
         embed.add_field(name='Warning Level', value=str(level), inline=True)
     elif type_.lower() == 'mute':
         embed.add_field(name='Mute Type', value=str(level).capitalize(), inline=True)
-    elif type_.lower() == 'kick':
-        embed.add_field(name='', value='')
-    elif type_.lower() == 'ban':
-        embed.add_field(name='', value='')
-    elif type_.lower() == 'unban':
-        embed.add_field(name='', value='')
 
     embed.add_field(name='Reason', value=reason, inline=True)
-    if type_.lower() not in ('kick', 'ban'):
+    if type_.lower() not in ('kick', 'unban'):
         embed.add_field(name='Duration', value=duration, inline=False)
 
     embed.set_footer(text=f'{msg_id} • {get_time(date_only=True)}')
