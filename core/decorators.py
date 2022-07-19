@@ -5,6 +5,7 @@ import discord
 
 from typing import Optional, Union
 import inspect
+import json
 
 
 def in_channels(has_target: Optional[bool] = False):
@@ -15,12 +16,19 @@ def in_channels(has_target: Optional[bool] = False):
                     try:
                         if ctx.channel.id not in CHANNEL_IDS:
                             return
-                        await func(self, ctx, target, *args, **kwargs)
+                        detail = await func(self, ctx, target, *args, **kwargs)
+                        print(detail)
                     except Exception as e:
                         await ctx.channel.send(ERROR_MESSAGE.format(e))
-                        logger.error(e)
+                        logger.error(f'{"-" * 80}\n{e}\n{"-" * 80}')
                     else:
-                        logger.info(f'User {ctx.author} use {func.__name__} at target {target}')
+                        if not detail or detail is None:
+                            logger.info(f'User {ctx.author} use {func.__name__}')
+                        else:
+                            logger.info(f'User {ctx.author} use {func.__name__}, details:\n'
+                                        f'{"-" * 80}\n'
+                                        f'{json.dumps(detail, indent=4)}\n'
+                                        f'{"-" * 80}')
 
             predicate.__name__ = func.__name__
             predicate.__signature__ = inspect.signature(func)
@@ -31,12 +39,18 @@ def in_channels(has_target: Optional[bool] = False):
                     try:
                         if ctx.channel.id not in CHANNEL_IDS:
                             return
-                        await func(self, ctx, *args, **kwargs)
+                        detail = await func(self, ctx, *args, **kwargs)
                     except Exception as e:
                         await ctx.channel.send(ERROR_MESSAGE.format(e))
-                        logger.error(e)
+                        logger.error(f'{"-" * 80}\n{e}\n{"-" * 80}')
                     else:
-                        logger.info(f'User {ctx.author} use {func.__name__}')
+                        if not detail or detail is None:
+                            logger.info(f'User {ctx.author} use {func.__name__}')
+                        else:
+                            logger.info(f'User {ctx.author} use {func.__name__}, details:\n'
+                                        f'{"-" * 80}\n'
+                                        f'{json.dumps(detail, indent=4)}\n'
+                                        f'{"-" * 80}')
 
             predicate.__name__ = func.__name__
             predicate.__signature__ = inspect.signature(func)
@@ -56,7 +70,7 @@ def self_check(func):
         if (target == self.bot.user) or (ctx.author.id == target.id):
             await ctx.channel.send('Mabok ya bang?')
             return
-        await func(self, ctx, target, *args, **kwargs)
+        return await func(self, ctx, target, *args, **kwargs)
 
     predicate.__name__ = func.__name__
     predicate.__signature__ = inspect.signature(func)
