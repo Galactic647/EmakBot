@@ -1,4 +1,4 @@
-from globals import DEFAUT_DURATION
+import config
 
 # Ban
 BAN_BRIEF = 'Command untuk memban user dari server'
@@ -16,7 +16,7 @@ MUTE = f'''
 Mute ini adalah tipe mute server dimana user yang dimute tidak akan bisa
 mengakes seluruh channel di server
 
-Mute ini sendiri memiliki durasi default yaitu: `{DEFAUT_DURATION.get("mute")}`
+Mute ini sendiri memiliki durasi default yaitu: `{config.DEFAUT_DURATION.get("mute")}`
 Jika parameter `[duration]` tidak diberikan maka akan diambil durasi default
 
 Command ini akan mengirim pesan pada 3 channel:
@@ -38,7 +38,7 @@ LSMUTE = f'''
 Mute ini adalah tipe mute livestream dimana user yang dimute tidak akan bisa
 mengakses channel livestream
 
-Mute sendiri memiliki durasi default yaitu: `{DEFAUT_DURATION.get("mute")}`
+Mute sendiri memiliki durasi default yaitu: `{config.DEFAUT_DURATION.get("mute")}`
 Jika parameter `[duration]` tidak diberikan maka akan diambil durasi default
 
 Untuk tipe mute ini ada pilihan durasi `Permanent` dimana mute ini tidak akan
@@ -87,8 +87,8 @@ WARN = f'''
 Level maksimal untuk warn adalah level 2
 
 Warn sendiri memiliki durasi default untuk setiap levelnya
-Warn 1 : `{DEFAUT_DURATION.get("warn-1")}`
-Warn 2 : `{DEFAUT_DURATION.get("warn-2")}`
+Warn 1 : `{config.DEFAUT_DURATION.get("warn-1")}`
+Warn 2 : `{config.DEFAUT_DURATION.get("warn-2")}`
 Jika parameter `[duration]` tidak diberikan maka akan diambil durasi default
 
 Command ini akan mengirim pesan pada 3 channel:
