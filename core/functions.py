@@ -1,4 +1,4 @@
-from globals import PATTERN, CHANNEL_IDS, ALLOW_DM, RESTRICT
+import config
 
 import discord
 
@@ -19,7 +19,7 @@ def color_picker() -> int:
 def time_process(time_: str) -> Union[None, int]:
     total_time = 0.5  # Only accept int, 0.x is just for checking
     groups = {'hari': 86400, 'jam': 3600, 'menit': 60, 'detik': 1}
-    match = PATTERN.match(time_.lower())
+    match = config.PATTERN.match(time_.lower())
 
     if time_.lower() == 'permanent':
         return -1
@@ -156,18 +156,18 @@ def embedder(type_: str, msg_id: str, moderator, user, avatar, reason: str, dura
 
 
 async def process_message(self, ctx, msg, user, user_msg) -> None:
-    warn_channel = await self.bot.fetch_channel(CHANNEL_IDS.warnings)
+    warn_channel = await self.bot.fetch_channel(config.CHANNEL_IDS.warnings)
 
     if isinstance(msg, discord.Embed):
         await ctx.channel.send(embed=msg)
-        if not RESTRICT:
+        if not config.RESTRICT:
             await warn_channel.send(embed=msg)
     else:
-        if not RESTRICT:
+        if not config.RESTRICT:
             await warn_channel.send(msg)
         await ctx.channel.send(msg)
 
-    if ALLOW_DM:
+    if config.ALLOW_DM:
         await user.send(user_msg)
 
 
