@@ -1,5 +1,5 @@
-from globals import CHANNEL_IDS, ERROR_MESSAGE, GUILD_ID, warn_list, mute_list
 from core.logger import logger
+import config
 
 import discord
 
@@ -14,11 +14,11 @@ def in_channels(has_target: Optional[bool] = False):
             async def predicate(self, ctx, target: Union[discord.Member, str], *args, **kwargs):
                 async with ctx.typing():
                     try:
-                        if ctx.channel.id not in CHANNEL_IDS:
+                        if ctx.channel.id not in config.CHANNEL_IDS:
                             return
                         detail = await func(self, ctx, target, *args, **kwargs)
                     except Exception as e:
-                        await ctx.channel.send(ERROR_MESSAGE.format(e))
+                        await ctx.channel.send(config.ERROR_MESSAGE.format(e))
                         logger.error(f'{"-" * 80}\n{e}\n{"-" * 80}')
                     else:
                         if not detail or detail is None:
@@ -36,11 +36,11 @@ def in_channels(has_target: Optional[bool] = False):
             async def predicate(self, ctx, *args, **kwargs):
                 async with ctx.typing():
                     try:
-                        if ctx.channel.id not in CHANNEL_IDS:
+                        if ctx.channel.id not in config.CHANNEL_IDS:
                             return
                         detail = await func(self, ctx, *args, **kwargs)
                     except Exception as e:
-                        await ctx.channel.send(ERROR_MESSAGE.format(e))
+                        await ctx.channel.send(config.ERROR_MESSAGE.format(e))
                         logger.error(f'{"-" * 80}\n{e}\n{"-" * 80}')
                     else:
                         if not detail or detail is None:
@@ -60,7 +60,7 @@ def in_channels(has_target: Optional[bool] = False):
 def self_check(func):
     async def predicate(self, ctx, target: Union[discord.Member, str], *args, **kwargs):
         if isinstance(target, str):
-            guild = await self.bot.fetch_guild(GUILD_ID)
+            guild = await self.bot.fetch_guild(config.GUILD_ID)
             try:
                 target = await guild.fetch_member(target)
             except discord.HTTPException:
@@ -80,9 +80,9 @@ def target_check(type_: str):
     def wrapper(func):
         mod_obj = None
         if type_.lower() == 'warn':
-            mod_obj = warn_list
+            mod_obj = config.warn_list
         elif type_.lower() == 'mute':
-            mod_obj = mute_list
+            mod_obj = config.mute_list
         else:
             raise ValueError(f'Unknown type {type_}')
 
@@ -97,7 +97,7 @@ def target_check(type_: str):
                 if target in mod_obj:
                     msg_id = target
                 else:
-                    guild = await self.bot.fetch_guild(GUILD_ID)
+                    guild = await self.bot.fetch_guild(config.GUILD_ID)
                     try:
                         target = await guild.fetch_member(target)
                         msg_id = target.id
