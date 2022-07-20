@@ -1,10 +1,12 @@
-from globals import ADMIN_PREFIX, USER_PREFIX, CHANNEL_IDS, DEVELOPMENT, RESTRICT, ALLOW_DM, warn_list, mute_list
 from core import functions as func
+from core.logger import logger
+import config
 
 import discord
 
 from typing import Optional
 import asyncio
+import json
 
 
 class Moderation(object):
@@ -42,14 +44,14 @@ class Moderation(object):
         self.stop = True
 
     async def process_message(self, msg: str, user_msg: str) -> None:
-        id_ = CHANNEL_IDS.bot_development if DEVELOPMENT else CHANNEL_IDS.moderation
+        id_ = config.CHANNEL_IDS.bot_development if config.DEVELOPMENT else config.CHANNEL_IDS.moderation
         channel = await self.bot.fetch_channel(id_)
         await channel.send(msg)
 
-        if ALLOW_DM:
+        if config.ALLOW_DM:
             await self.user.send(user_msg)
-        if not RESTRICT:
-            warn_channel = await self.bot.fetch_channel(CHANNEL_IDS.warnings)
+        if not config.RESTRICT:
+            warn_channel = await self.bot.fetch_channel(config.CHANNEL_IDS.warnings)
             await warn_channel.send(msg)
 
     def info(self) -> dict:
@@ -76,9 +78,11 @@ class Warn(Moderation):
             await asyncio.sleep(1)
 
         if not self.stop:
-            await self.process_message(ADMIN_PREFIX['remove_warn'].format(self.user, 'Durasi habis'),
-                                       USER_PREFIX['remove_warn'].format('Durasi habis'))
-            del warn_list[self.id_]
+            await self.process_message(config.ADMIN_PREFIX['remove_warn'].format(self.user, 'Durasi habis'),
+                                       config.USER_PREFIX['remove_warn'].format('Durasi habis'))
+            del config.warn_list[self.id_]
+            logger.info(f'Removed warn for user {self.user} [Durasi Habis]\n'
+                        f'{"-" * 80}\n{json.dumps(self.info(), indent=4)}\n{"-" * 80}')
         else:
             self.stop = False
 
@@ -98,10 +102,12 @@ class Mute(Moderation):
 
         if not self.stop:
             mute_role = discord.utils.get(self.user.guild.roles, name='Mute')
-            await self.process_message(ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
-                                       USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
+            await self.process_message(config.ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
+                                       config.USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
             await self.user.remove_roles(mute_role)
-            del mute_list[self.id_]
+            del config.mute_list[self.id_]
+            logger.info(f'Removed mute for user {self.user} [Durasi Habis]\n'
+                        f'{"-" * 80}\n{json.dumps(self.info(), indent=4)}\n{"-" * 80}')
         else:
             self.stop = False
 
@@ -125,9 +131,11 @@ class LSMute(Moderation):
 
         if not self.duration and not self.stop and not self.permanent:
             mute_role = discord.utils.get(self.user.guild.roles, name='Livestream Mute')
-            await self.process_message(ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
-                                       USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
+            await self.process_message(config.ADMIN_PREFIX['unmute'].format(self.user, self.type_, 'Durasi habis'),
+                                       config.USER_PREFIX['unmute'].format(self.type_, 'Durasi habis'))
             await self.user.remove_roles(mute_role)
-            del mute_list[self.id_]
+            del config.mute_list[self.id_]
+            logger.info(f'Removed lsmute for user {self.user} [Durasi Habis]\n'
+                        f'{"-" * 80}\n{json.dumps(self.info(), indent=4)}\n{"-" * 80}')
         else:
             self.stop = False
