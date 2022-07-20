@@ -1,5 +1,6 @@
 from core.functions import color_picker
-from globals import VISIBLE_COGS
+import config
+
 from discord.ext import commands
 import discord
 
@@ -16,7 +17,7 @@ class CustomHelp(commands.HelpCommand):
                             f'`{caller} [group]` atau `{caller} [command]`'
 
         for cog, cmds in mapping.items():
-            if cog is None or cog.qualified_name.lower() not in VISIBLE_COGS:
+            if cog is None or cog.qualified_name.lower() not in config.VISIBLE_COGS:
                 continue
 
             cmds = await self.filter_commands(cmds, sort=True)
