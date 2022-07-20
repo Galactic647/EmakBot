@@ -1,7 +1,6 @@
-from globals import GUILD_ID, MAX_BACKUP_FOLDERS, mute_list, warn_list
 from core import functions as func, moderation as mod, descriptions as desc, decorators
 from core.logger import logger
-import globals
+import config
 
 from discord.ext import commands
 import discord
@@ -18,7 +17,7 @@ class Utils(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    async def regular_backup(self, interval: int):
+    async def regular_backup(self, interval: int) -> None:
         try:
             while True:
                 if self._backup(type_='auto'):
@@ -30,7 +29,7 @@ class Utils(commands.Cog):
     @staticmethod
     def _backup(type_: Optional[str] = 'auto') -> str:
         data = dict()
-        if not mute_list and not warn_list:
+        if not config.mute_list and not config.warn_list:
             return str()
 
         for folder in ('backup', 'backup/auto', 'backup/manual'):
@@ -38,8 +37,8 @@ class Utils(commands.Cog):
                 os.mkdir(folder)
         for backups in ('backup/auto', 'backup/manual'):
             folders = os.listdir(backups)
-            if len(folders) > MAX_BACKUP_FOLDERS:
-                for folder in folders[:-1 * MAX_BACKUP_FOLDERS]:
+            if len(folders) > config.MAX_BACKUP_FOLDERS:
+                for folder in folders[:-1 * config.MAX_BACKUP_FOLDERS]:
                     shutil.rmtree(folder)
 
         now = datetime.now()
@@ -51,7 +50,7 @@ class Utils(commands.Cog):
 
         backup_file = f'{folder}/backup@{wib.strftime("%H-%M-%S")}.bak'
 
-        for n, l in zip(('warn_list', 'mute_list'), (warn_list, mute_list)):
+        for n, l in zip(('config.warn_list', 'config.mute_list'), (config.warn_list, config.mute_list)):
             data[n] = dict((k, v.info()) for k, v in l.items())
         with open(backup_file, 'w') as file:
             json.dump(data, file, indent=4)
@@ -59,15 +58,16 @@ class Utils(commands.Cog):
         return backup_file
 
     async def _get_member(self, member_id: int) -> discord.Member:
-        guild = await self.bot.fetch_guild(GUILD_ID)
+        guild = await self.bot.fetch_guild(config.GUILD_ID)
         return await guild.fetch_member(member_id)
 
     @commands.command(brief=desc.BACKUP_BRIEF, description=desc.BACKUP)
     @decorators.in_channels(has_target=False)
-    async def backup(self, ctx) -> None:
+    async def backup(self, ctx) -> str:
         file = self._backup('manual')
         attachment = discord.File(file)
         await ctx.channel.send(file=attachment, content=':ok_hand: Backed up!, filenya bisa dicek dibawah')
+        return f'{file}: {func.convert_size(os.path.getsize(file), 0)}'
 
     @commands.command(brief=desc.LISTBACKUP_BRIEF, description=desc.LISTBACKUP)
     @decorators.in_channels(has_target=False)
@@ -132,15 +132,17 @@ class Utils(commands.Cog):
 
     @commands.command(brief=desc.RELOAD_BRIEF, description=desc.RELOAD)
     @decorators.in_channels(has_target=False)
-    async def reload(self, ctx, type_: str, date: str, file: str) -> None:
+    async def reload(self, ctx, type_: str, date: str, file: str) -> str:
         mute_role = discord.utils.get(ctx.author.guild.roles, name='mod.Mute')
         lsmute_role = discord.utils.get(ctx.author.guild.roles, name='Livestream mod.Mute')
 
-        if not os.path.exists(f'backup/{type_.lower()}/{date}/{file}'):
-            await ctx.channel.send('File backup tidak ditemukan')
-            return
+        backup_file = f'backup/{type_.lower()}/{date}/{file}'
 
-        with open(f'backup/{type_.lower()}/{date}/{file}', 'r') as bak_file:
+        if not os.path.exists(backup_file):
+            await ctx.channel.send('File backup tidak ditemukan')
+            return str()
+
+        with open(backup_file, 'r') as bak_file:
             data = json.load(bak_file)
             bak_file.close()
 
@@ -161,7 +163,7 @@ class Utils(commands.Cog):
                 else:
                     elapsed = 'Permanent'
 
-                if type_.lower() == 'warn_list':
+                if type_.lower() == 'config.warn_list':
                     warn_obj = mod.Warn(
                         self.bot,
                         edit.get('moderator'),
@@ -175,10 +177,10 @@ class Utils(commands.Cog):
                     warn_obj.created_at = edit.get('created_at')
                     warn_obj.created_at_as_dict = edit.get('created_as_dict')
 
-                    warn_list[id_] = warn_obj
-                    asyncio.ensure_future(warn_list[id_].count_down())
+                    config.warn_list[id_] = warn_obj
+                    asyncio.ensure_future(config.warn_list[id_].count_down())
 
-                elif type_.lower() == 'mute_list':
+                elif type_.lower() == 'config.mute_list':
                     mute_obj = None
                     user = edit.get('user')
                     if edit.get('type_').lower() == 'server':
@@ -208,9 +210,10 @@ class Utils(commands.Cog):
                     mute_obj.created_at = edit.get('created_at')
                     mute_obj.created_at_as_dict = edit.get('created_as_dict')
 
-                    mute_list[id_] = mute_obj
-                    asyncio.ensure_future(mute_list[id_].count_down())
+                    config.mute_list[id_] = mute_obj
+                    asyncio.ensure_future(config.mute_list[id_].count_down())
         await ctx.channel.send(':ok_hand: Reloaded!')
+        return backup_file
 
     @commands.command(brief=desc.LOADEXT_BRIEF, description=desc.LOADEXT)
     @commands.is_owner()
@@ -263,11 +266,11 @@ class Utils(commands.Cog):
             return
 
         if flag.upper() == 'RESTRICT':
-            globals.RESTRICT = value
+            config.RESTRICT = value
         elif flag.upper() == 'ALLOW_DM':
-            globals.ALLOW_DM = value
+            config.ALLOW_DM = value
         elif flag.upper() == 'DEVELOPMENT':
-            globals.DEVELOPMENT = value
+            config.DEVELOPMENT = value
         await ctx.channel.send(f'Flag `{flag.upper()}` diubah ke `{value}`')
 
     @commands.command(brief=desc.CHECKFLAG_BRIEF, description=desc.CHECKFLAG)
@@ -276,7 +279,7 @@ class Utils(commands.Cog):
         if flag.upper() not in ('RESTRICT', 'ALLOW_DM', 'DEVELOPMENT'):
             await ctx.channel.send(f'Flag {flag.upper()} tidak ditemukan')
             return
-        await ctx.channel.send(f'Flag `{flag.upper()} = {getattr(globals, flag.upper())}`')
+        await ctx.channel.send(f'Flag `{flag.upper()} = {getattr(config, flag.upper())}`')
 
     @commands.command(brief=desc.PING_BRIEF, description=desc.PING)
     @decorators.in_channels(has_target=False)
