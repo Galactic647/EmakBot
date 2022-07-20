@@ -1,6 +1,6 @@
-from globals import DEVELOPMENT
 from core import decorators, descriptions as desc, functions as func
 from core.logger import logger
+import config
 
 from discord.ext import commands
 import discord
@@ -16,7 +16,7 @@ class Kick(commands.Cog):
     @commands.command(brief=desc.KICK_BRIEF, description=desc.KICK)
     @decorators.in_channels(has_target=True)
     @decorators.self_check
-    async def kick(self, ctx, target: Union[discord.Member, str], reason: str) -> None:
+    async def kick(self, ctx, target: Union[discord.Member, str], reason: str) -> dict:
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel and msg.content.lower() in ["y", "n"]
 
@@ -29,8 +29,12 @@ class Kick(commands.Cog):
                                       reason, str(), str())
 
                 await ctx.channel.send(embed=embed)
-                if not DEVELOPMENT:
+                if not config.DEVELOPMENT:
                     await self.bot.kick(target, reason=reason)
+                    return {
+                        'user': target,
+                        'reason': reason
+                    }
         except asyncio.TimeoutError:
             await ctx.channel.send('Command di cancel')
 
