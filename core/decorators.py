@@ -17,7 +17,6 @@ def in_channels(has_target: Optional[bool] = False):
                         if ctx.channel.id not in CHANNEL_IDS:
                             return
                         detail = await func(self, ctx, target, *args, **kwargs)
-                        print(detail)
                     except Exception as e:
                         await ctx.channel.send(ERROR_MESSAGE.format(e))
                         logger.error(f'{"-" * 80}\n{e}\n{"-" * 80}')
