@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from globals import BACKUP_INTERVAL, OWNER_ID
 from core import custom_help as ch
 from core.logger import logger
 from cogs.utils import Utils
+import config
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -14,7 +14,7 @@ import os
 
 load_dotenv()
 client = commands.Bot(command_prefix='?')
-client.owner_id = OWNER_ID
+client.owner_id = config.OWNER_ID
 
 
 @client.event
@@ -25,7 +25,7 @@ async def on_ready() -> None:
 
     logger.info(f'Logged as {client.user}')
     backup = Utils(client)
-    await backup.regular_backup(BACKUP_INTERVAL)
+    await backup.regular_backup(config.BACKUP_INTERVAL)
 
 
 @client.event
